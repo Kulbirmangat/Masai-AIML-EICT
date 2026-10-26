@@ -24,4 +24,10 @@ def clean_shipments(raw, medians=None):
     clean_df["declared_value_inr"] = clean_df["declared_value_inr"].fillna(medians["declared_value_inr"])
   return (clean_df, medians)
 def build_features(clean, hubs):
-  
+    df_cleaned = pd.merge(clean, hubs, on="hub_id", how="left")
+    df_cleaned["promised_hours"] = df_cleaned.index.map(PROMISED_HOURS)
+    df_cleaned["is_cod"] = (df_cleaned["payment_mode"] == "COD").astype(int)
+    df_cleaned["is_weekend"] = df_cleaned["dispatch_time"].dt.dayofweek.isin([5, 6]).astype(int)
+    df_cleaned["dispatch_hour"] = df_cleaned["dispatch_time"].dt.hour
+    df_cleaned["log_declared_value"] = np.log(df_cleaned["declared_value_inr"])
+    return df_cleaned
