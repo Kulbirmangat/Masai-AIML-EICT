@@ -1,3 +1,5 @@
+import pandas as pd
+import numpy as np
 from src.shipment_prep import clean_shipments, build_features
 clean = pd.read_csv("data/raw_shipments.csv")
 hubs = pd.read_csv("data/hubs.csv")
