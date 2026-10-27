@@ -12,7 +12,7 @@ def clean_shipments(raw, medians=None):
   clean_df = raw.drop_duplicates()
   clean_df["service_type"] = clean_df["service_type"].str.strip().str.title()
   clean_df["payment_mode"] = clean_df["payment_mode"].fillna("Unknown")
-  clean_df["declared_value_inr"] = clean_df["declared_value"].str.replace('₹', '', regex=False).str.replace(',', '', regex=False).astype(int)
+  clean_df["declared_value_inr"] = pd.to_numeric(clean_df["declared_value"].str.replace('₹', '', regex=False).str.replace(',', '', regex=False), errors='coerce')
   clean_df = clean_df.drop(columns="declared_value")
   clean_df["dispatch_time"] = pd.to_datetime(clean_df["dispatch_time"])
   clean_df.loc[clean_df['parcel_weight_kg'] > 100, 'parcel_weight_kg'] = np.nan
