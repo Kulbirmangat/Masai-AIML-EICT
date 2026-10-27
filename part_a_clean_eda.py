@@ -31,3 +31,21 @@ checks_df = pd.DataFrame({
   "hours_outlier_count": hours_outlier_count
 })']
 checks_df.to_csv("outputs/part_a_checks.csv", index=False)
+dimensions = ["service_type", "hub_tier", "distance_band"]
+all_summaries = []
+for dim in dimensions:
+    summary = df_cleaned.groupby(dim).agg(
+        shipments=('is_delayed', 'count'),
+        delayed=('is_delayed', 'sum'),
+        delay_rate=('is_delayed', 'mean'),
+        mean_hours=('delivery_hours', 'mean')
+    ).reset_index()
+    summary = summary.rename(columns={dim: "group"})
+    summary["dimension"] = dim
+    summary["group"] = summary["group"].astype(str)
+    summary = summary[["dimension", "group", "shipments", "delayed", "delay_rate", "mean_hours"]]
+    all_summaries.append(summary)
+final_summary = pd.concat(all_summaries, ignore_index=True)
+final_summary.to_csv("outputs/part_a_delay_by_group.csv", index=False)
+correlation_matrix = built_features.corr(numeric_only=True)
+correlation_matrix.to_csv("outputs/part_a_correlations.csv", index_label="feature")
