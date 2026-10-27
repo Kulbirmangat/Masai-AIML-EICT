@@ -29,7 +29,7 @@ checks_df = pd.DataFrame({
   "hours_lower_bound": hours_lower_bound.round(4),
   "hours_upper_bound": hours_upper_bound.round(4),
   "hours_outlier_count": hours_outlier_count
-})]
+})
 checks_df.to_csv("outputs/part_a_checks.csv", index=False)
 dimensions = ["service_type", "hub_tier", "distance_band"]
 all_summaries = []
