@@ -1,3 +1,5 @@
+import pandas as pd
+import numpy as np
 PROMISED_HOURS = {"Express": 36, "Standard": 60, "Economy": 96}
 FEATURES = [
     "promised_hours", "distance_km", "parcel_weight_kg", "log_declared_value", "n_stops",
