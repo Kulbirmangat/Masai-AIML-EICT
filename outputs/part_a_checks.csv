@@ -1,0 +1,2 @@
+missing_parcel_weight_before,service_type_spellings_before,service_type_spellings_after,nulls_in_features_and_target,declared_value_mean_inr,declared_value_median_inr,log_declared_value_mean,log_declared_value_median,hours_q1,hours_q3,hours_lower_bound,hours_upper_bound,hours_outlier_count
+24,12,3,0,1533.0542,1121.5,7.0277,7.0224,43.255,72.5625,-0.7063,116.5238,1
