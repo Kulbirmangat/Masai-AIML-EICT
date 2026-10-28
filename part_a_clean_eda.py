@@ -3,6 +3,7 @@ import numpy as np
 from src.shipment_prep import clean_shipments, build_features, FEATURES
 clean = pd.read_csv("data/raw_shipments.csv")
 hubs = pd.read_csv("data/hubs.csv")
+clean = clean.drop_duplicates()
 missing_parcel_weight_before = clean['parcel_weight_kg'].isna().sum()
 service_type_spellings_before = clean['service_type'].nunique()
 cleaned_shipments, medians = clean_shipments(clean)
