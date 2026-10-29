@@ -105,8 +105,8 @@ for model_name in top_2_names:
   )
   cv_results.append({
     "model": model_name,
-    "mean_r2": round(scores.mean()), 4),
-    "std_r2": round(scores.std()), 4),
+    "mean_r2": round(scores.mean(), 4),
+    "std_r2": round(scores.std(), 4),
   })
 df_cv = pd.DataFrame(cv_results)
 df_cv.to_csv("outputs/part_b_cv.csv", index=False)
@@ -118,7 +118,7 @@ test_row = {
   "MAE": round(mean_absolute_error(y_test, test_preds), 4), 
   "MSE": round(mean_squared_error(y_test, test_preds), 4), 
   "RMSE": round(root_mean_squared_error(y_test, test_preds), 4), 
-  "R2": round(r2_score(y_test, test_preds, 4)
+  "R2": round(r2_score(y_test, test_preds), 4)
   }
 df_metrics = pd.concat([df_metrics, pd.DataFrame([test_row])], ignore_index=True)
 df_metrics.to_csv("outputs/part_b_metrics.csv", index=False)
