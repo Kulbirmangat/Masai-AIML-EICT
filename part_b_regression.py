@@ -82,7 +82,7 @@ for i in lr:
   val_preds = GBR.predict(X_val)
   gb_results.append({
     "learning_rate": lr,
-    "val_rmse": round(root_mean_squared_error(y_val, val_preds), 4)
+    "val_rmse": round(root_mean_squared_error(y_val, val_preds), 4),
     "val_r2": round(r2_score(y_val, val_preds), 4)
   })
 gb_df = pd.DataFrame(gb_results)
