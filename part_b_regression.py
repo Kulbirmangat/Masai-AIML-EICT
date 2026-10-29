@@ -98,9 +98,9 @@ cv_results = []
 for model_name in top_2_names:
   model_obj = models[model_name]
   scores = cross_val_score(
-    estimator=model_obj,
-    X=X_train_val,
-    y=y_train_val,
+    model_obj,
+    X_train_val,
+    y_train_val,
     cv=kf
   )
   cv_results.append({
