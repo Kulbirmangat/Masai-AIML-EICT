@@ -69,9 +69,9 @@ for name, model in models.items():
   model_metrics.append({
     "model": name,
     "split": "val",
-    "MAE": round(mean_absolute_error(y_val, val_preds), 4)
-    "MSE": round(mean_squared_error(y_val, val_preds), 4)
-    "RMSE": round(root_mean_squared_error(y_val, val_preds), 4)
+    "MAE": round(mean_absolute_error(y_val, val_preds), 4),
+    "MSE": round(mean_squared_error(y_val, val_preds), 4),
+    "RMSE": round(root_mean_squared_error(y_val, val_preds), 4),
     "R2": round(r2_score(y_val, val_preds), 4)
   })
 df_metrics = pd.DataFrame(model_metrics)
