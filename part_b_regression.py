@@ -52,7 +52,7 @@ model_metrics.append({
     "MAE": round(mean_absolute_error(y_val, y_val_pred_baseline), 4),
     "MSE": round(mean_squared_error(y_val, y_val_pred_baseline), 4),
     "RMSE": round(root_mean_squared_error(y_val, y_val_pred_baseline), 4),
-    "R2": round(r2_score(y_val, y_val_pred_baseline, 4),
+    "R2": round(r2_score(y_val, y_val_pred_baseline), 4),
 })
 models = {
   "Linear Regression": Pipeline([
