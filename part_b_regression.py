@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from src.shipment_prep import FEATURES
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.linear_model import LinearRegression
@@ -8,20 +9,20 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.pipeline import Pipeline
 modelling_table = pd.read_csv("data/modelling_table.csv")
-X = FEATURES
+X = modelling_table[FEATURES]
 y = modelling_table["delivery_hours"]
 X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.3, random_state=42)
-X_val, X_test, y_val, y_temp = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
-checks_df = pd.DataFrame({
+checks_df = pd.DataFrame([{
   "train_rows": len(X_train_scaled),
   "val_rows": len(X_val),
   "test_rows": len(X_test),
   "train_scaled_max_abs_mean": np.abs(np.mean(X_train_scaled, axis=0)).max(),
   "test_scaled_max_abs_mean": np.abs(np.mean(X_test_scaled, axis=0)).max()
-})
+}])
 checks_df.to_csv("outputs/part_b_checks.csv", index=False)
 train_mean = y_train.mean()
 y_val_pred_baseline = np.full(shape=len(y_val), fill_value=train_mean)
@@ -32,8 +33,8 @@ best_val_rmse = float("inf")
 for d in depths:
   dt = DecisionTreeRegressor(max_depth=d, random_state=42)
   dt.fit(X_train, y_train)
-  train_rmse = root_mean_squared_error(y_train, dt.predict(X_train))
-  val_rmse = root_mean_squared_error(y_val, dt.predict(X_val))
+  train_rmse = np.sqrt(mean_squared_error(y_train, dt.predict(X_train)))
+  val_rmse = np.sqrt(mean_squared_error(y_val, dt.predict(X_val)))
   if val_rmse < best_val_rmse:
     best_val_rmse = val_rmse
     best_dtr = dt
@@ -42,7 +43,6 @@ for d in depths:
       "train_rmse": round(train_rmse, 4),
       "val_rmse": round(val_rmse, 4),
   })
-lowest_val_rmse = df_depth["val_rmse"].min()
 df_depth = pd.DataFrame(results)
 df_depth.to_csv("outputs/part_b_tree_depth.csv", index=False)
 model_metrics = []
@@ -51,17 +51,17 @@ model_metrics.append({
     "split": "val",
     "MAE": round(mean_absolute_error(y_val, y_val_pred_baseline), 4),
     "MSE": round(mean_squared_error(y_val, y_val_pred_baseline), 4),
-    "RMSE": round(root_mean_squared_error(y_val, y_val_pred_baseline), 4),
+    "RMSE": round(np.sqrt(mean_squared_error(y_val, y_val_pred_baseline)), 4),
     "R2": round(r2_score(y_val, y_val_pred_baseline), 4),
 })
 models = {
-  "Linear Regression": Pipeline([
+  "linear_regression": Pipeline([
     ("scaler", StandardScaler()),
     ("model", LinearRegression())
   ]),
-  "Decision Tree Regressor": DecisionTreeRegressor(max_depth=best_dtr.max_depth, random_state=42),
-  "Random Forest Regressor": RandomForestRegressor(n_estimators=100, random_state=42),
-  "Gradient Boosting Regressor": GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, random_state=42),
+  "decision_tree": DecisionTreeRegressor(max_depth=best_dtr.max_depth, random_state=42),
+  "random_forest": RandomForestRegressor(n_estimators=100, random_state=42),
+  "gradient_boosting": GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, random_state=42),
 }
 for name, model in models.items():
   model.fit(X_train, y_train)
@@ -71,7 +71,7 @@ for name, model in models.items():
     "split": "val",
     "MAE": round(mean_absolute_error(y_val, val_preds), 4),
     "MSE": round(mean_squared_error(y_val, val_preds), 4),
-    "RMSE": round(root_mean_squared_error(y_val, val_preds), 4),
+    "RMSE": round(np.sqrt(mean_squared_error(y_val, val_preds)), 4),
     "R2": round(r2_score(y_val, val_preds), 4)
   })
 df_metrics = pd.DataFrame(model_metrics)
@@ -81,14 +81,14 @@ for i in lr:
   GBR = GradientBoostingRegressor(n_estimators=100, learning_rate=i, random_state=42).fit(X_train, y_train)
   val_preds = GBR.predict(X_val)
   gb_results.append({
-    "learning_rate": lr,
-    "val_rmse": round(root_mean_squared_error(y_val, val_preds), 4),
+    "learning_rate": i,
+    "val_rmse": round(np.sqrt(mean_squared_error(y_val, val_preds)), 4),
     "val_r2": round(r2_score(y_val, val_preds), 4)
   })
 gb_df = pd.DataFrame(gb_results)
 gb_df.to_csv("outputs/part_b_gb_learning_rate.csv", index=False)
 non_baseline = df_metrics[df_metrics["model"] != "mean_baseline"]
-ranked_candidates = four_candidates.sort_values(by="RMSE")
+ranked_candidates = non_baseline.sort_values(by="RMSE")
 top_2_names = ranked_candidates["model"].head(2).tolist()
 best_candidate_name = top_2_names[0]
 X_train_val = pd.concat([X_train, X_val], axis=0)
@@ -99,7 +99,7 @@ for model_name in top_2_names:
   model_obj = models[model_name]
   scores = cross_val_score(
     estimator=model_obj,
-    X=X_train_Val,
+    X=X_train_val,
     y=y_train_val,
     cv=kf
   )
@@ -117,7 +117,7 @@ test_row = {
   "split": "test", 
   "MAE": round(mean_absolute_error(y_test, test_preds), 4), 
   "MSE": round(mean_squared_error(y_test, test_preds), 4), 
-  "RMSE": round(root_mean_squared_error(y_test, test_preds), 4), 
+  "RMSE": round(np.sqrt(mean_squared_error(y_test, test_preds)), 4), 
   "R2": round(r2_score(y_test, test_preds), 4)
   }
 df_metrics = pd.concat([df_metrics, pd.DataFrame([test_row])], ignore_index=True)
