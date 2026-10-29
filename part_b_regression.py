@@ -6,7 +6,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, r
 from sklearn.model_selection import train_test_split, KFold, cross_val_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.tree import DecisionTreeRegressor
-from slearn.pipeline import Pipeline
+from sklearn.pipeline import Pipeline
 modelling_table = pd.read_csv("data/modelling_table.csv")
 X = FEATURES
 y = modelling_table["delivery_hours"]
