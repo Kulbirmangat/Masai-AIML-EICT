@@ -188,4 +188,31 @@ df_threshold = pd.DataFrame(threshold_list)
 df_threshold.to_csv("outputs/part_c_thresholds.csv", index=False)
 valid_thresholds = df_thresh[df_thresh["recall"] >= 0.80]["threshold"]
 alert_threshold = valid_thresholds.max() if not valid_thresholds.empty else 0.1
-final_model_preds = final_model.predict(X_test)
+test_probability = final_model.predict_proba(X_test)[:, 1]
+test_predictions_array = np.where(test_probability >= alert_threshold, "delayed", "not delayed")
+TN, FP, FN, TP = confusion_matrix(y_test, test_predictions_array, labels=["not delayed", "delayed"]).ravel()
+accuracy, precision, recall, f1 = compute_metrics_from_cm(TN, FP, FN, TP)
+df_final_test = pd.DataFrame([{
+    "threshold": alert_threshold,
+    "TN": int(TN),
+    "FP": int(FP),
+    "FN": int(FN),
+    "TP": int(TP),
+    "accuracy": accuracy,
+    "precision": precision,
+    "recall": recall,
+    "f1": f1
+}])
+df_final_test.to_csv("outputs/part_c_final_test.csv", index=False)
+rf_model = final_model.named_steps["model"]
+raw_depth = rf_model.max_depth
+config_row = {
+    "selector_k": final_model.named_steps["selector"].k,
+    "n_estimators": rf_model.n_estimators,
+    "max_depth": "unlimited" if raw_depth is None else raw_depth,
+    "min_samples_leaf": rf_model.min_samples_leaf,
+    "threshold": alert_threshold,
+    "chosen_from": best_row["search"] if "best_row" in locals() and isinstance(best_row, dict) and "search" in best_row else pd.read_csv("outputs/part_c_tuning.csv").sort_values(by=["val_f1", "search"], ascending=[False, True]).iloc[0]["search"]
+}
+config_df = pd.DataFrame([config_row])
+config_df.to_csv("outputs/part_c_final_config.csv", index=False)
