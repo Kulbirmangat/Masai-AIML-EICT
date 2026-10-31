@@ -3,6 +3,7 @@ import numpy as np
 import joblib
 from sklearn.cluster import KMeans
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
@@ -24,7 +25,7 @@ scaler = StandardScaler()
 X_scaled = scaler.fit_transform(hub_profile[feature_cols])
 kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
 hub_profile["cluster"] = kmeans.fit_predict(X_scaled)
-dist_matrix = squareform(pdist(X_scaled, metric="euclidean"))
+dist_matrix = euclidean_distances(X_scaled, X_scaled)
 results = []
 for k in [2, 3, 4, 5]:
     km = KMeans(n_clusters=k, random_state=42, n_init=10)
