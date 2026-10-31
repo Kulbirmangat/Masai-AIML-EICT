@@ -16,13 +16,22 @@ X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, r
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
-checks_df = pd.DataFrame([{
-  "train_rows": len(X_train_scaled),
-  "val_rows": len(X_val),
-  "test_rows": len(X_test),
-  "train_scaled_max_abs_mean": np.abs(np.mean(X_train_scaled, axis=0)).max(),
-  "test_scaled_max_abs_mean": np.abs(np.mean(X_test_scaled, axis=0)).max()
-}])
+checks_df = pd.DataFrame({
+    "metric": [
+        "train_rows",
+        "val_rows",
+        "test_rows",
+        "train_scaled_max_abs_mean",
+        "test_scaled_max_abs_mean",
+    ],
+    "value": [
+        len(X_train_scaled),
+        len(X_val),
+        len(X_test),
+        np.abs(np.mean(X_train_scaled, axis=0)).max(),
+        np.abs(np.mean(X_test_scaled, axis=0)).max(),
+    ],
+})
 checks_df.to_csv("outputs/part_b_checks.csv", index=False)
 train_mean = y_train.mean()
 y_val_pred_baseline = np.full(shape=len(y_val), fill_value=train_mean)
