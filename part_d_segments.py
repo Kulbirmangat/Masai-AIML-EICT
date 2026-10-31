@@ -48,21 +48,23 @@ for k in [2, 3, 4, 5]:
     })
 separation_df = pd.DataFrame(results)
 separation_df.to_csv("outputs/part_d_separation.csv", index=False)
-ordered_clusters = (hub_profile.groupby("cluster")["delay_rate"].mean().sort_values(ascending=True).index)
+ordered_clusters = (
+    hub_profile.groupby("cluster")["delay_rate"].mean().sort_values(ascending=True).index)
 delay_rate_names = ["Standard", "Watch", "Escalate"]
 cluster_name_map = dict(zip(ordered_clusters, delay_rate_names))
-hub_profile["cluster_segment"] = hub_profile["cluster"].map(cluster_name_map)
+hub_profile["segment"] = hub_profile["cluster"].map(cluster_name_map)
 hub_meta = (modelling_table[["hub_id", "hub_city", "hub_tier"]].drop_duplicates().sort_values("hub_id"))
-hub_segments = pd.merge(hub_profile[["hub_id", "cluster_segment"]], hub_meta, on="hub_id")
-hub_segments = hub_segments[["hub_id", "cluster_segment", "hub_city", "hub_tier"]].sort_values("hub_id")
+hub_segments = pd.merge(hub_profile[["hub_id", "segment"]], hub_meta, on="hub_id")
+hub_segments = hub_segments[["hub_id", "segment", "hub_city", "hub_tier"]].sort_values("hub_id")
 hub_segments.to_csv("outputs/hub_segments.csv", index=False)
-segment_profile = hub_profile.groupby("cluster_segment", as_index=False).agg(
-  hubs = ("hub_id", "count"),
-  mean_delivery_hours = ("delivery_hours", "mean"),
-  delay_rate = ("is_delayed", "mean"),
-  mean_distance_km = ("distance_km", "mean"),
-  mean_n_stops = ("n_stops", "mean")
+segment_profile = hub_profile.groupby("segment", as_index=False).agg(
+    hubs=("hub_id", "count"),
+    mean_delivery_hours=("mean_delivery_hours", "mean"),
+    delay_rate=("delay_rate", "mean"),
+    mean_distance_km=("mean_distance_km", "mean"),
+    mean_n_stops=("mean_n_stops", "mean"),
 )
+segment_profile.to_csv("outputs/hub_segment_profile.csv", index=False)
 tier_to_implied_segment = {
     "Tier 1": "Standard",
     "Tier 2": "Watch",
@@ -71,7 +73,7 @@ tier_to_implied_segment = {
     2: "Watch",
     3: "Escalate",
 }
-mismatch_mask = (hub_segments["segment"] != hub_segments["hub_tier"].map(tier_to_implied_segment))
+mismatch_mask = hub_segments["segment"] != hub_segments["hub_tier"].map(tier_to_implied_segment)
 tier_vs_segment_mismatch = hub_segments[mismatch_mask].copy()
 tier_vs_segment_mismatch.to_csv("outputs/tier_vs_segment_mismatch.csv", index=False)
 config_df = pd.read_csv("outputs/part_c_final_config.csv")
