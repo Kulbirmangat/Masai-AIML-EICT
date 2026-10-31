@@ -101,11 +101,12 @@ pd.DataFrame({"feature": FEATURES}).to_csv("models/feature_order.csv", index=Fal
 impute_df = pd.DataFrame({
     "column": ["parcel_weight_kg", "distance_km", "delivery_hours"],
     "median": [
-        float(modelling_table["parcel_weight_kg"].median())
-        if "parcel_weight_kg" in modelling_table.columns
-        else float(modelling_table["weight_kg"].median()),
         float(modelling_table["distance_km"].median()),
-        float(modelling_table["delivery_hours"].median()),
+        float(modelling_table["parcel_weight_kg"].median()),
+        float(modelling_table["declared_value_inr"].median()),
+    ],
+})
+impute_df.to_csv("models/impute_values.csv", index=False)
     ],
 })
 impute_df.to_csv("models/impute_values.csv", index=False)
@@ -129,7 +130,7 @@ impute_df = pd.read_csv("models/impute_values.csv")
 stored_threshold = float(threshold_df["threshold"].iloc[0])
 feature_order = feature_order_df["feature"].tolist()
 stored_medians = dict(zip(impute_df["column"], impute_df["median"]))
-cleaned_parcels = clean_shipments(new_shipments, medians=stored_medians)
+cleaned_parcels, _ = clean_shipments(new_shipments, medians=stored_medians)
 features_df = build_features(cleaned_parcels, hubs)
 X_new = features_df[feature_order]
 delay_probability = np.round(delay_model.predict_proba(X_new)[:, 1], 4)
