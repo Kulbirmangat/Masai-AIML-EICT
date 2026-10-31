@@ -1,0 +1,2 @@
+train_rows,val_rows,test_rows,train_scaled_max_abs_mean,test_scaled_max_abs_mean
+840,180,180,1.4390605109665124e-15,0.21868855040610002
