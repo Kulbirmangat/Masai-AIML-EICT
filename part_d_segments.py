@@ -54,7 +54,7 @@ cluster_name_map = dict(zip(ordered_clusters, delay_rate_names))
 hub_profile["cluster_segment"] = hub_profile["cluster"].map(cluster_name_map)
 hub_meta = (modelling_table[["hub_id", "hub_city", "hub_tier"]].drop_duplicates().sort_values("hub_id"))
 hub_segments = pd.merge(hub_profile[["hub_id", "cluster_segment"]], hub_meta, on="hub_id")
-hub_segments = hub_segments[["hub_id", "segment", "hub_city", "hub_tier"]].sort_values("hub_id")
+hub_segments = hub_segments[["hub_id", "cluster_segment", "hub_city", "hub_tier"]].sort_values("hub_id")
 hub_segments.to_csv("outputs/hub_segments.csv", index=False)
 segment_profile = hub_profile.groupby("segment", as_index=False).agg(
   hubs = ("hub_id", "count"),
