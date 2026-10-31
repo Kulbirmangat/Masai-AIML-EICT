@@ -100,7 +100,16 @@ pd.DataFrame({"threshold": [threshold_val]}).to_csv("models/delay_threshold.csv"
 pd.DataFrame({"feature": FEATURES}).to_csv("models/feature_order.csv", index=False)
 raw_train_df = pd.read_csv("data/raw_shipments.csv")
 _, base_medians = clean_shipments(raw_train_df, medians=None)
-impute_df = pd.DataFrame([{"column": k, "median": float(v)} for k, v in base_medians.items()])
+impute_df = pd.DataFrame({
+    "column": ["distance_km", "parcel_weight_kg", "declared_value_inr"],
+    "median": [
+        float(modelling_table["distance_km"].median()),
+        float(modelling_table["parcel_weight_kg"].median()),
+        float(modelling_table["declared_value_inr"].median())
+        if "declared_value_inr" in modelling_table.columns
+        else float(np.exp(modelling_table["log_declared_value"]).median()),
+    ]
+})
 impute_df.to_csv("models/impute_values.csv", index=False)
 delay_model = joblib.load("models/delay_model.pkl")
 delay_model_probs = delay_model.predict_proba(X_test)
