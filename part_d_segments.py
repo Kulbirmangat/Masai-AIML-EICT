@@ -1,7 +1,11 @@
 import pandas as pd
 import numpy as np
+import joblib
 from sklearn.cluster import KMeans
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+from src.shipment_prep import FEATURES
 modelling_table = pd.read_csv("data/modelling_table.csv")
 hub_profile = df.groupby("hub_id", as_index=False).agg(
   shipments = ("hub_id", "count"),
@@ -67,4 +71,40 @@ tier_to_implied_segment = {
 mismatch_mask = (hub_segments["segment"] != hub_segments["hub_tier"].map(tier_to_implied_segment))
 tier_vs_segment_mismatch = hub_segments[mismatch_mask].copy()
 tier_vs_segment_mismatch.to_csv("outputs/tier_vs_segment_mismatch.csv", index=False)
-final_config = pd.read_csv("outputs/part_c_final_config.csv")
+config_df = pd.read_csv("outputs/part_c_final_config.csv")
+row = config_df.iloc[0]
+k_val = int(row["selector_k"])
+max_depth_val = None if str(row["max_depth"]).lower() == "unlimited" else int(row["max_depth"])
+chosen_params = {
+    "n_estimators": int(row["n_estimators"]),
+    "max_depth": max_depth_val,
+    "min_samples_leaf": int(row["min_samples_leaf"]),
+}
+df = pd.read_csv("data/modelling_table.csv")
+X = df[FEATURES]
+y = df["is_delayed"]
+X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
+X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42, stratify=y_temp)
+final_pipeline = Pipeline([
+    ("selector", SelectKBest(score_func=f_classif, k=k_val)),
+    ("model", RandomForestClassifier(random_state=42, **chosen_params))
+]).fit(X_train, y_train)
+joblib.dump(final_pipeline, "models/delay_model.pkl")
+threshold_val = float(row["threshold"])
+pd.DataFrame({"threshold": [threshold_val]}).to_csv("models/delay_threshold.csv", index=False)
+pd.DataFrame({"feature": FEATURES}).to_csv("models/feature_order.csv", index=False)
+impute_df = pd.DataFrame({
+    "column": ["weight_kg", "transit_distance_km", "expected_hours"],
+    "median": [clean_shipments["weight_kg"].median(), clean_shipments["transit_distance_km"].median(), clean_shipments["expected_hours"].median()]
+})
+impute_df.to_csv("models/impute_values.csv", index=False)
+delay_model = joblib.load("models/delay_model.pkl")
+delay_model_probs = delay_model.predict_proba(X_test)
+final_pipeline_probs = final_pipeline.predict_proba(X_test)
+test_rows_scored = len(X_test)
+reload_max_abs_probability_diff = float(np.max(np.abs(delay_model_probs - final_pipeline_probs)))
+reload_check = pd.DataFrame({
+    "metric": ["test_rows_scored", "reload_max_abs_probability_diff", "threshold"],
+    "value": [test_rows_scored, reload_max_abs_probability_diff, threshold_val]
+})
+reload_check.to_csv("outputs/part_d_reload_check.csv", index=False)
