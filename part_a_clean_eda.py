@@ -20,19 +20,36 @@ iqr = hours_q3 - hours_q1
 hours_lower_bound, hours_upper_bound = hours_q1 - (1.5 * iqr), hours_q3 + (1.5 * iqr)
 hours_outlier_count = ((built_features["delivery_hours"] > hours_upper_bound) | (built_features["delivery_hours"] < hours_lower_bound)).sum()
 checks_df = pd.DataFrame({
-  "missing_parcel_weight_before": [missing_parcel_weight_before],
-  "service_type_spellings_before": [service_type_spellings_before],
-  "service_type_spellings_after": [service_type_spellings_after],
-  "nulls_in_features_and_target": [nulls_in_features_and_target],
-  "declared_value_mean_inr": [declared_value_mean_inr.round(4)],
-  "declared_value_median_inr": [declared_value_median_inr.round(4)],
-  "log_declared_value_mean": [log_declared_value_mean.round(4)], 
-  "log_declared_value_median": [log_declared_value_median.round(4)],
-  "hours_q1": [hours_q1.round(4)],
-  "hours_q3": [hours_q3.round(4)],
-  "hours_lower_bound": [hours_lower_bound.round(4)],
-  "hours_upper_bound": [hours_upper_bound.round(4)],
-  "hours_outlier_count": [hours_outlier_count]
+    "metric": [
+        "missing_parcel_weight_before",
+        "service_type_spellings_before",
+        "service_type_spellings_after",
+        "nulls_in_features_and_target",
+        "declared_value_mean_inr",
+        "declared_value_median_inr",
+        "log_declared_value_mean",
+        "log_declared_value_median",
+        "hours_q1",
+        "hours_q3",
+        "hours_lower_bound",
+        "hours_upper_bound",
+        "hours_outlier_count"
+    ],
+    "value": [
+        missing_parcel_weight_before,
+        service_type_spellings_before,
+        service_type_spellings_after,
+        nulls_in_features_and_target,
+        declared_value_mean_inr.round(4),
+        declared_value_median_inr.round(4),
+        log_declared_value_mean.round(4),
+        log_declared_value_median.round(4),
+        hours_q1.round(4),
+        hours_q3.round(4),
+        hours_lower_bound.round(4),
+        hours_upper_bound.round(4),
+        hours_outlier_count
+    ],
 })
 checks_df.to_csv("outputs/part_a_checks.csv", index=False)
 bins = [0, 200, 400, 600, 2000]
