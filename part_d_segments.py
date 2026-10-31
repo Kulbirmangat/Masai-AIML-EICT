@@ -100,7 +100,17 @@ pd.DataFrame({"threshold": [threshold_val]}).to_csv("models/delay_threshold.csv"
 pd.DataFrame({"feature": FEATURES}).to_csv("models/feature_order.csv", index=False)
 impute_df = pd.DataFrame({
     "column": ["weight_kg", "transit_distance_km", "expected_hours"],
-    "median": [clean_shipments["weight_kg"].median(), clean_shipments["transit_distance_km"].median(), clean_shipments["expected_hours"].median()]
+    "median": [
+        float(modelling_table["weight_kg"].median())
+        if "weight_kg" in modelling_table.columns
+        else 0.0,
+        float(modelling_table["transit_distance_km"].median())
+        if "transit_distance_km" in modelling_table.columns
+        else float(modelling_table["distance_km"].median()),
+        float(modelling_table["expected_hours"].median())
+        if "expected_hours" in modelling_table.columns
+        else float(modelling_table["delivery_hours"].median()),
+    ],
 })
 impute_df.to_csv("models/impute_values.csv", index=False)
 delay_model = joblib.load("models/delay_model.pkl")
