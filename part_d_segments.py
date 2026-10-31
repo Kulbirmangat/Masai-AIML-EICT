@@ -107,9 +107,6 @@ impute_df = pd.DataFrame({
     ],
 })
 impute_df.to_csv("models/impute_values.csv", index=False)
-    ],
-})
-impute_df.to_csv("models/impute_values.csv", index=False)
 delay_model = joblib.load("models/delay_model.pkl")
 delay_model_probs = delay_model.predict_proba(X_test)
 final_pipeline_probs = final_pipeline.predict_proba(X_test)
