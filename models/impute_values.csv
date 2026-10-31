@@ -1,4 +1,4 @@
 column,median
-weight_kg,0.0
-transit_distance_km,314.95
-expected_hours,54.415
+distance_km,314.95
+parcel_weight_kg,1.83
+declared_value_inr,1121.5
