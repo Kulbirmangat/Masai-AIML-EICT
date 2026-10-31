@@ -54,5 +54,5 @@ for dim in dimensions:
     all_summaries.append(summary)
 final_summary = pd.concat(all_summaries, ignore_index=True)
 final_summary.to_csv("outputs/part_a_delay_by_group.csv", index=False)
-correlation_matrix = built_features.corr(numeric_only=True)
+correlation_matrix = round(built_features.corr(numeric_only=True), 4)
 correlation_matrix.to_csv("outputs/part_a_correlations.csv", index_label="feature")
