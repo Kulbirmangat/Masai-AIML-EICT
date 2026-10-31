@@ -3,11 +3,13 @@ import numpy as np
 import joblib
 from sklearn.cluster import KMeans
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_selection import SelectKBest, f_classif
+from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from src.shipment_prep import FEATURES
 modelling_table = pd.read_csv("data/modelling_table.csv")
-hub_profile = df.groupby("hub_id", as_index=False).agg(
+hub_profile = modelling_table.groupby("hub_id", as_index=False).agg(
   shipments = ("hub_id", "count"),
   mean_delivery_hours = ("delivery_hours", "mean"),
   delay_rate = ("is_delayed", "mean"),
@@ -28,14 +30,14 @@ for k in [2, 3, 4, 5]:
     km = KMeans(n_clusters=k, random_state=42, n_init=10)
     labels = km.fit_predict(X_scaled)
     same_dists, diff_dists = [], []
-    for i in range(24):
+    for i in range(len(X_scaled)):
       for j in range(i + 1, 24):
         dist = np.linalg.norm(X_scaled[i] - X_scaled[j])
         if labels[i] == labels[j]:
             same_dists.append(dist)
         else:
             diff_dists.append(dist)
-    across_over_within = np.mean(diff_dists) / np.mean(same_dists)
+    ratio = np.mean(diff_dists) / np.mean(same_dists)
     counts = pd.Series(labels).value_counts().sort_values(ascending=False)
     cluster_sizes_str = "-".join(counts.astype(str))
     results.append({
@@ -47,7 +49,7 @@ separation_df = pd.DataFrame(results)
 separation_df.to_csv("outputs/part_d_separation.csv", index=False)
 ordered_clusters = (hub_profile.groupby("cluster")["delay_rate"].mean().sort_values(ascending=True).index)
 delay_rate_names = ["Standard", "Watch", "Escalate"]
-cluster_name_map = dict(zip(ranked_clusters, delay_rate_names))
+cluster_name_map = dict(zip(ordered_clusters, delay_rate_names))
 hub_profile["cluster_segment"] = hub_profile["cluster"].map(cluster_name_map)
 hub_meta = (df[["hub_id", "hub_city", "hub_tier"]].drop_duplicates().sort_values("hub_id"))
 hub_segments = pd.merge(hub_profile[["hub_id", "cluster_segment"]], hub_meta, on="hub_id")
